@@ -131,13 +131,20 @@ async function loadDoubts() {
 
 async function getAI(id) {
   try {
+    console.log("Calling AI for doubt:", id);
     const res = await fetch(API + "/auto-answer/" + id, {method: "POST"});
     if (res.ok) {
+      const result = await res.json();
+      console.log("AI answer created:", result);
       alert("✓ AI has provided an answer!");
       // Auto-show answers after AI generates one
-      await showAnswers(id);
+      setTimeout(() => showAnswers(id), 500);
+    } else {
+      console.error("Failed to get AI answer:", res.status);
+      alert("Error generating AI answer");
     }
   } catch (e) {
+    console.error("Error:", e);
     alert("Error: " + e.message);
   }
 }
@@ -145,10 +152,20 @@ async function getAI(id) {
 async function showAnswers(id) {
   try {
     const res = await fetch(API + "/answers/" + id);
+    if (!res.ok) {
+      console.error("Failed to fetch answers:", res.status);
+      alert("Error fetching answers");
+      return;
+    }
+    
     const answers = await res.json();
+    console.log("Answers received:", answers); // Debug log
     const container = document.getElementById("answers-" + id);
     
-    if (!container) return; // Safety check
+    if (!container) {
+      console.error("Container not found for id:", id);
+      return;
+    }
     
     const isHidden = container.style.display === "none" || !container.style.display;
     
@@ -166,13 +183,15 @@ async function showAnswers(id) {
         `).join("");
       }
       container.style.display = "block";
+      console.log("Answers displayed");
     } else {
       // Hide answers
       container.style.display = "none";
+      console.log("Answers hidden");
     }
   } catch (e) {
     console.error("Error loading answers:", e);
-    alert("Error loading answers: " + e.message);
+    alert("Error: " + e.message);
   }
 }
 
