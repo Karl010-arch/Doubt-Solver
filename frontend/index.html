@@ -214,8 +214,9 @@ async function showAnswers(id) {
   }
 }
 
-loadDoubts();
-setInterval(loadDoubts, 5000); // Refresh every 5 seconds
+loadDoubts(); // Load doubts on page load
+// Don't use auto-refresh as it resets the answer display state
+// Users can manually refresh if needed
 </script>
 
 </body>
