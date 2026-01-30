@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Anonymous Doubt Solver</title>
+</head>
+<body>
+
+<h2>Ask a Doubt (Anonymous)</h2>
+
+<input id="question" placeholder="Enter your doubt">
+<input id="subject" placeholder="Subject">
+<button onclick="askDoubt()">Ask</button>
+
+<hr>
+
+<h3>All Doubts</h3>
+<ul id="doubts"></ul>
+
+<script>
+const API = "http://127.0.0.1:8000";
+
+async function askDoubt() {
+  const question = document.getElementById("question").value;
+  const subject = document.getElementById("subject").value;
+
+  const res = await fetch(API + "/doubts", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({question, subject})
+  });
+
+  alert("Doubt submitted");
+  loadDoubts();
+}
+
+async function loadDoubts() {
+  const res = await fetch(API + "/doubts");
+  const doubts = await res.json();
+
+  const ul = document.getElementById("doubts");
+  ul.innerHTML = "";
+
+  doubts.forEach(d => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <b>${d.question}</b> (${d.subject})
+      <button onclick="getAI('${d.id}')">AI Help</button>
+    `;
+    ul.appendChild(li);
+  });
+}
+
+async function getAI(id) {
+  await fetch(API + "/auto-answer/" + id, {method: "POST"});
+  alert("AI answered this doubt");
+}
+
+loadDoubts();
+</script>
+
+</body>
+</html>
