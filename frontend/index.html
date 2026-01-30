@@ -151,7 +151,9 @@ async function getAI(id) {
 
 async function showAnswers(id) {
   try {
+    console.log("Fetching answers for id:", id);
     const res = await fetch(API + "/answers/" + id);
+    
     if (!res.ok) {
       console.error("Failed to fetch answers:", res.status);
       alert("Error fetching answers");
@@ -159,38 +161,41 @@ async function showAnswers(id) {
     }
     
     const answers = await res.json();
-    console.log("Answers received:", answers); // Debug log
-    const container = document.getElementById("answers-" + id);
+    console.log("Answers received:", answers);
     
+    const container = document.getElementById("answers-" + id);
     if (!container) {
-      console.error("Container not found for id:", id);
+      console.error("Container not found:", "answers-" + id);
       return;
     }
     
-    const isHidden = container.style.display === "none" || !container.style.display;
-    
-    if (isHidden) {
+    // Toggle display
+    if (container.style.display === "none" || container.style.display === "") {
       // Show answers
-      if (answers.length === 0) {
-        container.innerHTML = "<p style='color:#999;'>No answers yet.</p>";
+      if (!answers || answers.length === 0) {
+        container.innerHTML = "<p style='color:#999; padding: 10px;'>No answers yet.</p>";
       } else {
-        container.innerHTML = answers.map(a => `
-          <div class="answer-item ${a.is_ai ? 'ai-answer' : 'user-answer'}">
-            <strong>${a.is_ai ? '🤖 AI Answer' : '👤 User Answer'}</strong>
-            <div class="answer-content">${a.content}</div>
-            <small>👍 ${a.votes} votes</small>
-          </div>
-        `).join("");
+        let html = "";
+        answers.forEach(a => {
+          html += `
+            <div class="answer-item ${a.is_ai ? 'ai-answer' : 'user-answer'}">
+              <strong>${a.is_ai ? '🤖 AI Answer' : '👤 User Answer'}</strong>
+              <div class="answer-content" style="white-space: pre-wrap;">${a.content}</div>
+              <small>👍 ${a.votes || 0} votes</small>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
       }
       container.style.display = "block";
-      console.log("Answers displayed");
+      console.log("Answers shown");
     } else {
       // Hide answers
       container.style.display = "none";
       console.log("Answers hidden");
     }
   } catch (e) {
-    console.error("Error loading answers:", e);
+    console.error("Error in showAnswers:", e);
     alert("Error: " + e.message);
   }
 }
