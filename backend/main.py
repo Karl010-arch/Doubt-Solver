@@ -13,7 +13,7 @@ from transformers import pipeline
 # Initialize the AI model (runs locally)
 # Using a fast, lightweight model
 print("Loading AI model... (first time takes ~30s)")
-qa_pipeline = pipeline("text2text-generation", model="google/flan-t5-base")
+qa_pipeline = pipeline("text-generation", model="distilgpt2")
 
 app = FastAPI(title="Anonymous AI Doubt Solver")
 
@@ -58,37 +58,41 @@ def find_similar(embedding):
     return None
 
 async def generate_ai_answer(question: str) -> str:
-    """Generate AI answer using local FLAN-T5 model"""
+    """Generate AI answer using local distilGPT-2 model"""
     try:
-        # Use the local model to answer the question
-        prompt = f"Explain this concept clearly for a student: {question}"
+        # Create a proper prompt for text generation
+        prompt = f"""Question: {question}
+
+Answer: """
         
         # Run in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(
             None,
-            lambda: qa_pipeline(prompt, max_length=300, do_sample=False)
+            lambda: qa_pipeline(prompt, max_length=250, do_sample=True, temperature=0.7)
         )
         
         if result and len(result) > 0:
-            answer = result[0].get("generated_text", "").strip()
-            if answer:
-                return answer
+            answer_text = result[0].get("generated_text", "").strip()
+            # Remove the prompt from the output
+            if "Answer:" in answer_text:
+                answer_text = answer_text.split("Answer:")[1].strip()
+            if answer_text and len(answer_text) > 20:
+                return answer_text
     except Exception as e:
         print(f"Error generating answer: {e}")
     
     # Fallback answer if model fails
-    return f"""Understanding: {question}
+    return f"""Answering your question about: {question}
 
-Here's how to approach this concept:
+Key Points:
+1. Core Concept: This topic has fundamental principles that are worth understanding
+2. Practical Use: It's applied in real-world situations across various fields
+3. Building Blocks: Learning this helps you understand related concepts better
+4. Practice: Work through examples to solidify your understanding
+5. Ask More Questions: Don't hesitate to explore deeper into this topic
 
-1. **Core Idea**: Break the concept into its fundamental components
-2. **Learn Basics**: Start with simple examples and definitions
-3. **Understand Relationships**: See how it connects to related concepts
-4. **Practice**: Apply it to real-world problems
-5. **Deepen Knowledge**: Explore advanced applications
-
-This topic is important in many fields. Keep exploring and asking questions to build a strong understanding!"""
+Keep learning and asking questions! Every great student starts with curiosity."""
     
     knowledge_base = {
         "what is ai": """Artificial Intelligence (AI) is the simulation of human intelligence by computers. Key points:
