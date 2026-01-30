@@ -1,10 +1,26 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import uuid
+import os
 
 app = FastAPI(title="Anonymous AI Doubt Solver")
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Serve frontend - mount after all API routes
+frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
+app.mount("/app", StaticFiles(directory=frontend_path, html=True), name="frontend")
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 

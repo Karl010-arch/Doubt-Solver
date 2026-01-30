@@ -2,60 +2,174 @@
 <html>
 <head>
   <title>Anonymous Doubt Solver</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .header { text-align: center; color: white; margin-bottom: 40px; }
+    .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+    .form-section { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 30px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
+    .form-group input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 1em; transition: border-color 0.3s; }
+    .form-group input:focus { outline: none; border-color: #667eea; }
+    .btn { padding: 12px 24px; border: none; border-radius: 5px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .btn-primary { background: #667eea; color: white; width: 100%; font-size: 1.1em; }
+    .btn-primary:hover { background: #5568d3; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+    .btn-small { padding: 8px 16px; font-size: 0.9em; margin-left: 10px; }
+    .btn-ai { background: #4CAF50; color: white; }
+    .btn-ai:hover { background: #45a049; }
+    .btn-answer { background: #2196F3; color: white; }
+    .btn-answer:hover { background: #0b7dda; }
+    .doubts-section { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .doubts-section h2 { margin-bottom: 20px; color: #333; }
+    .doubt-item { background: #f9f9f9; padding: 20px; margin-bottom: 15px; border-left: 4px solid #667eea; border-radius: 5px; transition: all 0.3s; }
+    .doubt-item:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .doubt-question { font-weight: 600; font-size: 1.1em; color: #333; margin-bottom: 8px; }
+    .doubt-subject { display: inline-block; background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; margin-bottom: 10px; }
+    .doubt-actions { margin-top: 12px; }
+    .answer-section { margin-top: 20px; background: #f0f7ff; padding: 15px; border-radius: 5px; }
+    .answer-item { background: white; padding: 12px; margin-top: 10px; border-left: 3px solid #2196F3; border-radius: 3px; }
+    .answer-content { margin: 5px 0; color: #555; }
+    .ai-answer { border-left-color: #4CAF50; }
+    .user-answer { border-left-color: #FF9800; }
+    .empty-state { text-align: center; color: #999; padding: 40px; }
+    .success-msg { background: #d4edda; color: #155724; padding: 12px; border-radius: 5px; margin-bottom: 15px; display: none; }
+  </style>
 </head>
 <body>
 
-<h2>Ask a Doubt (Anonymous)</h2>
+<div class="container">
+  <div class="header">
+    <h1>❓ Anonymous Doubt Solver</h1>
+    <p>Ask anything anonymously, get AI-powered answers</p>
+  </div>
 
-<input id="question" placeholder="Enter your doubt">
-<input id="subject" placeholder="Subject">
-<button onclick="askDoubt()">Ask</button>
+  <div class="form-section">
+    <h2>Ask Your Doubt</h2>
+    <div class="success-msg" id="successMsg">✓ Doubt submitted successfully!</div>
+    <div class="form-group">
+      <label for="question">Your Question</label>
+      <input id="question" type="text" placeholder="What would you like to know?">
+    </div>
+    <div class="form-group">
+      <label for="subject">Subject</label>
+      <input id="subject" type="text" placeholder="e.g., Mathematics, Science, General...">
+    </div>
+    <button class="btn btn-primary" onclick="askDoubt()">Submit Doubt</button>
+  </div>
 
-<hr>
-
-<h3>All Doubts</h3>
-<ul id="doubts"></ul>
+  <div class="doubts-section">
+    <h2>📚 All Doubts</h2>
+    <div id="doubts" class="empty-state">No doubts yet. Be the first to ask!</div>
+  </div>
+</div>
 
 <script>
-const API = "http://127.0.0.1:8000";
+const API = window.location.origin;
 
 async function askDoubt() {
-  const question = document.getElementById("question").value;
-  const subject = document.getElementById("subject").value;
+  const question = document.getElementById("question").value.trim();
+  const subject = document.getElementById("subject").value.trim();
+  
+  if (!question || !subject) {
+    alert("Please fill in all fields");
+    return;
+  }
 
-  const res = await fetch(API + "/doubts", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({question, subject})
-  });
-
-  alert("Doubt submitted");
-  loadDoubts();
+  try {
+    const res = await fetch(API + "/doubts", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({question, subject})
+    });
+    
+    if (res.ok) {
+      document.getElementById("question").value = "";
+      document.getElementById("subject").value = "";
+      const msg = document.getElementById("successMsg");
+      msg.style.display = "block";
+      setTimeout(() => msg.style.display = "none", 3000);
+      loadDoubts();
+    }
+  } catch (e) {
+    alert("Error submitting doubt: " + e.message);
+  }
 }
 
 async function loadDoubts() {
-  const res = await fetch(API + "/doubts");
-  const doubts = await res.json();
+  try {
+    const res = await fetch(API + "/doubts");
+    const doubts = await res.json();
 
-  const ul = document.getElementById("doubts");
-  ul.innerHTML = "";
+    const ul = document.getElementById("doubts");
+    
+    if (doubts.length === 0) {
+      ul.innerHTML = '<div class="empty-state">No doubts yet. Be the first to ask!</div>';
+      return;
+    }
 
-  doubts.forEach(d => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <b>${d.question}</b> (${d.subject})
-      <button onclick="getAI('${d.id}')">AI Help</button>
-    `;
-    ul.appendChild(li);
-  });
+    ul.innerHTML = "";
+    doubts.forEach(d => {
+      const div = document.createElement("div");
+      div.className = "doubt-item";
+      div.innerHTML = `
+        <div class="doubt-question">${d.question}</div>
+        <span class="doubt-subject">${d.subject}</span>
+        <div class="doubt-actions">
+          <button class="btn btn-small btn-ai" onclick="getAI('${d.id}')">🤖 Get AI Answer</button>
+          <button class="btn btn-small btn-answer" onclick="showAnswers('${d.id}')">💬 View Answers</button>
+        </div>
+        <div class="answer-section" id="answers-${d.id}" style="display:none;"></div>
+      `;
+      ul.appendChild(div);
+    });
+  } catch (e) {
+    console.error("Error loading doubts:", e);
+  }
 }
 
 async function getAI(id) {
-  await fetch(API + "/auto-answer/" + id, {method: "POST"});
-  alert("AI answered this doubt");
+  try {
+    const res = await fetch(API + "/auto-answer/" + id, {method: "POST"});
+    if (res.ok) {
+      alert("✓ AI has provided an answer!");
+      loadDoubts();
+    }
+  } catch (e) {
+    alert("Error: " + e.message);
+  }
+}
+
+async function showAnswers(id) {
+  try {
+    const res = await fetch(API + "/answers/" + id);
+    const answers = await res.json();
+    const container = document.getElementById("answers-" + id);
+    
+    if (container.style.display === "none") {
+      if (answers.length === 0) {
+        container.innerHTML = "<p style='color:#999;'>No answers yet.</p>";
+      } else {
+        container.innerHTML = answers.map(a => `
+          <div class="answer-item ${a.is_ai ? 'ai-answer' : 'user-answer'}">
+            <strong>${a.is_ai ? '🤖 AI Answer' : '👤 User Answer'}</strong>
+            <div class="answer-content">${a.content}</div>
+            <small>👍 ${a.votes} votes</small>
+          </div>
+        `).join("");
+      }
+      container.style.display = "block";
+    } else {
+      container.style.display = "none";
+    }
+  } catch (e) {
+    alert("Error loading answers: " + e.message);
+  }
 }
 
 loadDoubts();
+setInterval(loadDoubts, 5000); // Refresh every 5 seconds
 </script>
 
 </body>
