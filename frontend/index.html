@@ -148,7 +148,12 @@ async function showAnswers(id) {
     const answers = await res.json();
     const container = document.getElementById("answers-" + id);
     
-    if (container.style.display === "none") {
+    if (!container) return; // Safety check
+    
+    const isHidden = container.style.display === "none" || !container.style.display;
+    
+    if (isHidden) {
+      // Show answers
       if (answers.length === 0) {
         container.innerHTML = "<p style='color:#999;'>No answers yet.</p>";
       } else {
@@ -162,9 +167,11 @@ async function showAnswers(id) {
       }
       container.style.display = "block";
     } else {
+      // Hide answers
       container.style.display = "none";
     }
   } catch (e) {
+    console.error("Error loading answers:", e);
     alert("Error loading answers: " + e.message);
   }
 }
