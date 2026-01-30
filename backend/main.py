@@ -54,7 +54,6 @@ def generate_ai_answer(question):
     # Simple knowledge base for common questions
     question_lower = question.lower()
     
-    # Knowledge base with common answers
     knowledge_base = {
         "what is ai": """Artificial Intelligence (AI) is the simulation of human intelligence by computers. Key points:
 
@@ -136,6 +135,141 @@ def generate_ai_answer(question):
    - Transformers: For language
 
 6. **Challenges**: Requires lots of data and computational power.""",
+
+        "what is vector": """A Vector is a mathematical quantity that has both magnitude and direction.
+
+1. **Definition**:
+   - A vector represents a quantity with size (magnitude) and direction
+   - Examples: velocity, force, displacement, acceleration
+   - Represented as an arrow with a specific length and direction
+
+2. **Vector Representation**:
+   - In 2D: v = (x, y) where x and y are components
+   - In 3D: v = (x, y, z)
+   - General: v = (v₁, v₂, ..., vₙ)
+
+3. **Key Properties**:
+   - **Magnitude**: Length of the vector = √(x² + y²)
+   - **Direction**: Angle it makes with reference axis
+   - **Components**: Projections on axes
+
+4. **Vector Operations**:
+   - **Addition**: v₁ + v₂ (head-to-tail method)
+   - **Scalar Multiplication**: k·v (scales the vector)
+   - **Dot Product**: v₁·v₂ = |v₁||v₂|cos(θ)
+   - **Cross Product**: v₁ × v₂ (3D only, perpendicular vector)
+
+5. **Vs Scalar**:
+   - Scalar: Only magnitude (5 kg, 10°C)
+   - Vector: Magnitude + direction (5 m/s north, 10 N upward)
+
+6. **Real-World Applications**:
+   - Physics: Forces, velocity, acceleration
+   - Computer Graphics: 3D transformations
+   - Machine Learning: Feature vectors representing data
+   - Navigation: Displacement and direction
+
+7. **Example**:
+   - "5 units to the right and 3 units up" = vector (5, 3)
+   - Magnitude = √(25 + 9) = √34 ≈ 5.83 units""",
+
+        "what is derivative": """A Derivative measures how a function changes at any given point - the rate of change.
+
+1. **Basic Definition**:
+   - The derivative of f(x) at point x is the slope of the tangent line
+   - Notation: f'(x), df/dx, or dy/dx
+   - Represents instantaneous rate of change
+
+2. **Geometric Interpretation**:
+   - The slope of the curve at a specific point
+   - Steeper slope = faster change
+   - Positive slope = increasing, Negative slope = decreasing
+
+3. **Common Derivatives**:
+   - d/dx(xⁿ) = n·xⁿ⁻¹
+   - d/dx(sin x) = cos x
+   - d/dx(eˣ) = eˣ
+   - d/dx(ln x) = 1/x
+
+4. **Rules of Differentiation**:
+   - Power Rule, Product Rule, Quotient Rule, Chain Rule
+
+5. **Real-World Applications**:
+   - Physics: Velocity (derivative of position)
+   - Economics: Marginal cost and revenue
+   - Engineering: Optimization problems
+   - Medicine: Rate of drug concentration
+
+6. **Physical Meaning**:
+   - If s(t) = position, then s'(t) = velocity
+   - If v(t) = velocity, then v'(t) = acceleration""",
+
+        "what is integral": """An Integral is the reverse of a derivative - it finds the area under a curve and accumulates change.
+
+1. **Basic Definition**:
+   - The integral of f(x) gives the area under the curve
+   - Notation: ∫f(x)dx
+   - Two types: Definite and Indefinite
+
+2. **Indefinite Integral (Antiderivative)**:
+   - ∫f(x)dx = F(x) + C (where C is a constant)
+   - Finds the general function whose derivative is f(x)
+
+3. **Definite Integral**:
+   - ∫ₐᵇ f(x)dx = Area under curve from x=a to x=b
+   - Gives a specific numerical result
+
+4. **Fundamental Theorem of Calculus**:
+   - Connects derivatives and integrals
+   - Integration and differentiation are inverse operations
+
+5. **Common Integrals**:
+   - ∫xⁿdx = xⁿ⁺¹/(n+1) + C
+   - ∫sin x dx = -cos x + C
+   - ∫eˣ dx = eˣ + C
+
+6. **Applications**:
+   - Physics: Finding displacement from velocity
+   - Engineering: Center of mass calculations
+   - Economics: Total revenue from marginal revenue
+   - Probability: Computing probabilities from distributions""",
+
+        "what is matrix": """A Matrix is a rectangular array of numbers organized in rows and columns.
+
+1. **Definition**:
+   - Array with m rows and n columns: m × n matrix
+   - Example: 2×3 matrix has 2 rows and 3 columns
+   - [1 2 3]
+     [4 5 6]
+
+2. **Notation**:
+   - A, B, C... for matrix names
+   - aᵢⱼ represents element in row i, column j
+   - Matrix dimensions written as m × n
+
+3. **Types of Matrices**:
+   - Square Matrix: m = n
+   - Row Matrix: 1 × n
+   - Column Matrix: m × 1
+   - Identity Matrix: Ones on diagonal, zeros elsewhere
+   - Zero Matrix: All elements are zero
+
+4. **Matrix Operations**:
+   - **Addition**: Add corresponding elements
+   - **Subtraction**: Subtract corresponding elements
+   - **Multiplication**: A(m×n) × B(n×p) = C(m×p)
+   - **Transpose**: Switch rows and columns
+
+5. **Determinant and Inverse**:
+   - Determinant: Special value for square matrices
+   - Inverse: A⁻¹ such that A × A⁻¹ = I
+
+6. **Applications**:
+   - Computer Graphics: Transformations (rotation, scaling)
+   - Machine Learning: Data representation, neural networks
+   - Physics: System of equations
+   - Engineering: Structural analysis
+   - Cryptography: Encryption algorithms""",
     }
     
     # Check if we have a good answer for this question
