@@ -69,7 +69,7 @@ Answer: """
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(
             None,
-            lambda: qa_pipeline(prompt, max_length=250, do_sample=True, temperature=0.7)
+            lambda: qa_pipeline(prompt, max_new_tokens=150, do_sample=True, temperature=0.7)
         )
         
         if result and len(result) > 0:
