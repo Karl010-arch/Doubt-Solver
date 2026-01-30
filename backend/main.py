@@ -51,18 +51,129 @@ def find_similar(embedding):
     return None
 
 def generate_ai_answer(question):
-    return f"""
-Step-by-step explanation:
+    # Simple knowledge base for common questions
+    question_lower = question.lower()
+    
+    # Knowledge base with common answers
+    knowledge_base = {
+        "what is ai": """Artificial Intelligence (AI) is the simulation of human intelligence by computers. Key points:
 
-1. Understand the question.
-2. Apply the basic concept.
-3. Solve it clearly.
+1. **Definition**: AI refers to machines or software that can perform tasks that typically require human intelligence.
 
-Example:
-This explains the doubt: {question}
+2. **Types of AI**:
+   - Narrow AI: Designed for specific tasks (like chatbots, image recognition)
+   - General AI: Hypothetical AI with human-level intelligence
 
-(AI Generated Answer)
-"""
+3. **Key Technologies**:
+   - Machine Learning: Systems that learn from data
+   - Deep Learning: Neural networks with multiple layers
+   - Natural Language Processing: Understanding human language
+
+4. **Applications**:
+   - Virtual assistants (Siri, Alexa)
+   - Recommendation systems (Netflix, YouTube)
+   - Autonomous vehicles
+   - Medical diagnosis
+   - Image and speech recognition
+
+5. **Future Impact**: AI is revolutionizing industries and will continue to play a major role in technology and society.
+
+**In Summary**: AI enables computers to learn, reason, and make decisions autonomously, improving efficiency across many fields.""",
+
+        "what is machine learning": """Machine Learning (ML) is a subset of AI that enables computers to learn from data without explicit programming.
+
+1. **Core Concept**: Instead of being programmed with specific instructions, ML systems learn patterns from examples and data.
+
+2. **How it Works**:
+   - Collect training data
+   - Algorithm learns patterns from data
+   - Model makes predictions on new data
+
+3. **Types of ML**:
+   - Supervised Learning: Learning from labeled examples
+   - Unsupervised Learning: Finding patterns in unlabeled data
+   - Reinforcement Learning: Learning through rewards/penalties
+
+4. **Common Algorithms**:
+   - Decision Trees
+   - Random Forests
+   - Neural Networks
+   - Support Vector Machines
+
+5. **Real-World Examples**:
+   - Email spam detection
+   - Product recommendations
+   - Facial recognition
+   - Autonomous driving
+   - Fraud detection
+
+6. **Key Advantage**: Automatically improves with more data without manual reprogramming.""",
+
+        "what is deep learning": """Deep Learning is an advanced form of Machine Learning using artificial neural networks with multiple layers.
+
+1. **What Makes it "Deep"**: Multiple layers of interconnected neurons that process information hierarchically.
+
+2. **Key Components**:
+   - Input layer: Receives raw data
+   - Hidden layers: Process and transform data
+   - Output layer: Makes final prediction
+
+3. **Advantages**:
+   - Excellent for complex patterns
+   - Works well with large datasets
+   - Automatic feature extraction
+
+4. **Applications**:
+   - Image recognition and computer vision
+   - Natural language processing
+   - Speech recognition
+   - Autonomous vehicles
+   - Game playing (AlphaGo)
+
+5. **Famous Architectures**:
+   - Convolutional Neural Networks (CNN): For images
+   - Recurrent Neural Networks (RNN): For sequences
+   - Transformers: For language
+
+6. **Challenges**: Requires lots of data and computational power.""",
+    }
+    
+    # Check if we have a good answer for this question
+    for key, answer in knowledge_base.items():
+        if key in question_lower:
+            return answer
+    
+    # Default comprehensive answer for unknown questions
+    return f"""Based on the question: "{question}"
+
+While I don't have a specific answer for this exact question, here's a general approach to solving it:
+
+1. **Break Down the Problem**:
+   - Identify the core concept being asked
+   - Look for key terms and definitions
+   - Understand the context
+
+2. **Key Principles to Consider**:
+   - Think about fundamental concepts related to the topic
+   - Consider real-world applications
+   - Look for patterns and relationships
+
+3. **Step-by-Step Solution**:
+   - Start with basic understanding
+   - Build on foundational knowledge
+   - Apply specific techniques relevant to the problem
+
+4. **Verify Your Answer**:
+   - Check if the answer makes sense
+   - Look for consistency
+   - Consider edge cases
+
+5. **Related Topics to Explore**:
+   - Broader concepts that might help
+   - Similar problems and solutions
+   - Practical applications
+
+**Tip**: For more accurate answers, try asking about specific AI, Machine Learning, or Deep Learning concepts!"""
 
 @app.post("/doubts")
 def post_doubt(doubt: Doubt):
