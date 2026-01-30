@@ -137,8 +137,11 @@ async function getAI(id) {
       const result = await res.json();
       console.log("AI answer created:", result);
       alert("✓ AI has provided an answer!");
-      // Auto-show answers after AI generates one
-      setTimeout(() => showAnswers(id), 500);
+      // Wait a moment then show answers
+      await new Promise(r => setTimeout(r, 800));
+      console.log("Now calling showAnswers");
+      await showAnswers(id);
+      console.log("showAnswers completed");
     } else {
       console.error("Failed to get AI answer:", res.status);
       alert("Error generating AI answer");
@@ -151,51 +154,62 @@ async function getAI(id) {
 
 async function showAnswers(id) {
   try {
-    console.log("Fetching answers for id:", id);
+    console.log("=== showAnswers START for id:", id);
+    
+    const container = document.getElementById("answers-" + id);
+    console.log("Container found:", !!container, "Element:", container);
+    
+    if (!container) {
+      console.error("CONTAINER NOT FOUND with id: answers-" + id);
+      // List all elements with answer-section
+      const allSections = document.querySelectorAll(".answer-section");
+      console.log("Found " + allSections.length + " answer-sections total");
+      allSections.forEach((sec, idx) => console.log("  " + idx + ":", sec.id));
+      return;
+    }
+    
+    console.log("Fetching answers from API...");
     const res = await fetch(API + "/answers/" + id);
     
     if (!res.ok) {
-      console.error("Failed to fetch answers:", res.status);
-      alert("Error fetching answers");
+      console.error("API error:", res.status, res.statusText);
       return;
     }
     
     const answers = await res.json();
-    console.log("Answers received:", answers);
+    console.log("Answers from API:", answers);
     
-    const container = document.getElementById("answers-" + id);
-    if (!container) {
-      console.error("Container not found:", "answers-" + id);
-      return;
-    }
+    // Check current state
+    const isVisible = container.style.display !== "none" && container.style.display !== "";
+    console.log("Container currently visible:", isVisible);
     
-    // Toggle display
-    if (container.style.display === "none" || container.style.display === "") {
-      // Show answers
-      if (!answers || answers.length === 0) {
-        container.innerHTML = "<p style='color:#999; padding: 10px;'>No answers yet.</p>";
-      } else {
-        let html = "";
-        answers.forEach(a => {
-          html += `
-            <div class="answer-item ${a.is_ai ? 'ai-answer' : 'user-answer'}">
-              <strong>${a.is_ai ? '🤖 AI Answer' : '👤 User Answer'}</strong>
-              <div class="answer-content" style="white-space: pre-wrap;">${a.content}</div>
-              <small>👍 ${a.votes || 0} votes</small>
-            </div>
-          `;
-        });
-        container.innerHTML = html;
-      }
-      container.style.display = "block";
-      console.log("Answers shown");
+    // Force show
+    if (!answers || answers.length === 0) {
+      console.log("No answers, showing empty state");
+      container.innerHTML = "<p style='color:#999; padding: 10px;'>No answers yet.</p>";
     } else {
-      // Hide answers
-      container.style.display = "none";
-      console.log("Answers hidden");
+      console.log("Rendering " + answers.length + " answers");
+      let html = "";
+      answers.forEach((a, idx) => {
+        console.log("Answer " + idx + ":", a.is_ai ? "AI" : "User", a.content.substring(0, 50));
+        html += `
+          <div class="answer-item ${a.is_ai ? 'ai-answer' : 'user-answer'}">
+            <strong>${a.is_ai ? '🤖 AI Answer' : '👤 User Answer'}</strong>
+            <div class="answer-content" style="white-space: pre-wrap;">${a.content}</div>
+            <small>👍 ${a.votes || 0} votes</small>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
     }
+    
+    // Always show it
+    container.style.display = "block";
+    console.log("Container display set to block");
+    console.log("=== showAnswers END");
+    
   } catch (e) {
-    console.error("Error in showAnswers:", e);
+    console.error("ERROR in showAnswers:", e);
     alert("Error: " + e.message);
   }
 }
