@@ -7,8 +7,13 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import uuid
 import os
-import httpx
 import asyncio
+from transformers import pipeline
+
+# Initialize the AI model (runs locally)
+# Using a fast, lightweight model
+print("Loading AI model... (first time takes ~30s)")
+qa_pipeline = pipeline("text2text-generation", model="google/flan-t5-base")
 
 app = FastAPI(title="Anonymous AI Doubt Solver")
 
@@ -53,79 +58,37 @@ def find_similar(embedding):
     return None
 
 async def generate_ai_answer(question: str) -> str:
-    """Generate AI answer using Hugging Face API (free tier)"""
+    """Generate AI answer using local FLAN-T5 model"""
     try:
-        # Using Hugging Face's free inference API
-        # Model: mistral-7b (fast and free)
-        api_url = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
+        # Use the local model to answer the question
+        prompt = f"Explain this concept clearly for a student: {question}"
         
-        # Create a system prompt for educational answers
-        prompt = f"""You are an expert tutor helping students understand concepts clearly and concisely.
-Question from student: {question}
-
-Provide a clear, concise answer that:
-1. Defines the concept simply
-2. Explains key points in 2-3 sentences
-3. Gives a real-world example
-4. Mentions applications or related concepts
-
-Keep the answer under 300 words and easy to understand."""
-
-        # Make request to Hugging Face (no authentication needed for basic usage)
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                api_url,
-                json={"inputs": prompt},
-                headers={"User-Agent": "Doubt-Solver/1.0"}
-            )
+        # Run in thread pool to avoid blocking
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None,
+            lambda: qa_pipeline(prompt, max_length=300, do_sample=False)
+        )
         
-        if response.status_code == 200:
-            result = response.json()
-            if isinstance(result, list) and len(result) > 0:
-                answer_text = result[0].get("generated_text", "").strip()
-                # Extract only the answer part (remove the prompt)
-                if "Provide a clear" in answer_text:
-                    answer_text = answer_text.split("Provide a clear")[1].strip()
-                if answer_text:
-                    return answer_text
+        if result and len(result) > 0:
+            answer = result[0].get("generated_text", "").strip()
+            if answer:
+                return answer
     except Exception as e:
-        print(f"Error calling Hugging Face API: {e}")
+        print(f"Error generating answer: {e}")
     
-    # Fallback: Return a helpful answer using the knowledge base
-    question_lower = question.lower()
-    
-    # Simple fallback knowledge base for quick responses
-    fallback_answers = {
-        "vector": "A vector is a mathematical object with magnitude and direction. Examples: velocity, force. Vectors are fundamental in physics, graphics, and machine learning for representing data.",
-        "derivative": "A derivative measures the rate of change of a function. It represents the slope of a curve at any point. Applications: physics (velocity), economics (marginal cost), optimization problems.",
-        "integral": "An integral is the reverse of derivative - it calculates the area under a curve. Used in physics (displacement), engineering (center of mass), and probability distributions.",
-        "matrix": "A matrix is a rectangular array of numbers in rows and columns. Used in graphics transformations, machine learning, solving systems of equations, and neural networks.",
-        "ai": "Artificial Intelligence enables computers to perform human-like tasks. Applications: virtual assistants, recommendations, autonomous vehicles, medical diagnosis.",
-        "machine learning": "Machine Learning is AI that learns patterns from data without explicit programming. Types: supervised, unsupervised, reinforcement learning.",
-    }
-    
-    for key, answer in fallback_answers.items():
-        if key in question_lower:
-            return answer
-    
-    # Ultimate fallback
-    return f"""I understand you're asking about: {question}
+    # Fallback answer if model fails
+    return f"""Understanding: {question}
 
-Based on this question, here's a general approach to learning this concept:
+Here's how to approach this concept:
 
-1. **Start with Basics**: Understand the fundamental definition and core principles
-2. **Visual Learning**: Use diagrams, graphs, or visual representations when possible
-3. **Examples**: Study real-world applications and worked examples
-4. **Practice**: Work through problems to solidify your understanding
-5. **Connect Concepts**: Link this to related topics you already know
+1. **Core Idea**: Break the concept into its fundamental components
+2. **Learn Basics**: Start with simple examples and definitions
+3. **Understand Relationships**: See how it connects to related concepts
+4. **Practice**: Apply it to real-world problems
+5. **Deepen Knowledge**: Explore advanced applications
 
-**Tips for better learning**:
-- Ask specific questions about aspects you don't understand
-- Break complex ideas into smaller parts
-- Review periodically to strengthen memory
-- Teach others to deepen your understanding
-
-Feel free to ask follow-up questions for clarification!"""
+This topic is important in many fields. Keep exploring and asking questions to build a strong understanding!"""
     
     knowledge_base = {
         "what is ai": """Artificial Intelligence (AI) is the simulation of human intelligence by computers. Key points:
