@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
@@ -18,9 +19,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve frontend - mount after all API routes
+# Add route to serve index.html at root
 frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
-app.mount("/app", StaticFiles(directory=frontend_path, html=True), name="frontend")
+
+@app.get("/")
+def serve_frontend():
+    return FileResponse(os.path.join(frontend_path, "index.html"))
+
+# Serve static files
+app.mount("/static", StaticFiles(directory=frontend_path), name="static")
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 

@@ -134,7 +134,8 @@ async function getAI(id) {
     const res = await fetch(API + "/auto-answer/" + id, {method: "POST"});
     if (res.ok) {
       alert("✓ AI has provided an answer!");
-      loadDoubts();
+      // Auto-show answers after AI generates one
+      await showAnswers(id);
     }
   } catch (e) {
     alert("Error: " + e.message);
